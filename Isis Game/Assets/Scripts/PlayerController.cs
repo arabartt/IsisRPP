@@ -10,8 +10,10 @@ public class PlayerController : MonoBehaviour
     public float speed;
     private SpriteRenderer spriterenderer;
     public float jumpForce; 
-    public bool checkground = true; 
-
+    public bool checkground = true;
+    public float raysize;
+    public LayerMask groundlayer;
+    public bool checkJump; 
     void Start()
     {
         spriterenderer = GetComponent<SpriteRenderer>();
@@ -26,7 +28,9 @@ public class PlayerController : MonoBehaviour
     
     void Update()
     {
+        Groundcheck();
         Jump();
+        
     }
 
     void MovePlayer() 
@@ -48,19 +52,34 @@ public class PlayerController : MonoBehaviour
     void Jump()
     {
 
-        if (Input.GetButtonDown("Jump") && checkground)
+        if (Input.GetButtonDown("Jump"))
         {
-            rigidbody2D.AddForce(new Vector2(0, jumpForce), ForceMode2D.Impulse);
-            checkground = false;
+            if (checkground)
+            {
+                rigidbody2D.AddForce(new Vector2(0, jumpForce), ForceMode2D.Impulse);
+            }
+            else if (checkJump)
+            {
+                rigidbody2D.AddForce(new Vector2(0, jumpForce), ForceMode2D.Impulse);
+                checkJump = false;
+            }
         }
     }
 
-    private void OncollisionEnter2D(Collision2D collision)
+   
+
+    void Groundcheck()
     {
-        if(collision.gameObject.name == "Ground")
+        RaycastHit2D hit = Physics2D.Raycast(transform.position, Vector2.down, raysize, groundlayer);
+        checkground = hit.collider != null;
+        if (checkground)
         {
-            checkground = true;
-            Debug.Log("Chão");
+            checkJump = true; 
         }
+    }
+
+    private void OnDrawGizmos()
+    {
+        Debug.DrawRay(transform.position,Vector3.down * raysize, Color.red);
     }
 }
